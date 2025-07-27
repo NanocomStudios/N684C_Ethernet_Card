@@ -26,6 +26,10 @@ int main()
 
     sleep_ms(100);
     
+    uint8_t tmp[] = {23,55,44,33,44};
+
+    sendPacket(tmp,5);
+    
     while (true) {
         printf("Hello, world!\n");
         sleep_ms(1000);
