@@ -35,7 +35,9 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(N684C_Ethernet_Card N684C_Ethernet_Card.c )
+add_executable(N684C_Ethernet_Card N684C_Ethernet_Card.c
+                enc28j60.c
+)
 
 pico_set_program_name(N684C_Ethernet_Card "N684C_Ethernet_Card")
 pico_set_program_version(N684C_Ethernet_Card "0.1")
