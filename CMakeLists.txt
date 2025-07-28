@@ -37,6 +37,9 @@ pico_sdk_init()
 
 add_executable(N684C_Ethernet_Card N684C_Ethernet_Card.c
                 enc28j60.c
+                DataLink.c
+                Network.c
+                Transport.c
 )
 
 pico_set_program_name(N684C_Ethernet_Card "N684C_Ethernet_Card")
