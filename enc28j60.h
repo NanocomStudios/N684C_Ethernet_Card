@@ -244,5 +244,6 @@ void writeByte(uint8_t address, uint8_t data);
 void writePHY(uint8_t address, uint16_t data);
 void sendPacket(uint8_t* packet, uint16_t length);
 uint16_t receivePacket(uint8_t* buffer, uint16_t maxLength);
+void init(uint8_t* macaddr);
 
 #endif

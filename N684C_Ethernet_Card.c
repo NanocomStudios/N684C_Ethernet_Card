@@ -20,18 +20,15 @@ int main()
     
     // Chip select is active-low, so we'll initialise it to a driven-high state
     gpio_set_dir(PIN_CS, GPIO_OUT);
-    setCs(0);
-
-    reset();
-
-    sleep_ms(100);
     
-    uint8_t tmp[] = {23,55,44,33,44};
+    uint8_t mac[] = {0x20,0x03,0x25,0x61,0x03,0x40};
+    uint8_t tmp[] = {0xff,0xff,0xff,0xff,0xff,0xff,0x20,0x03,0x25,0x61,0x03,0x40,0x00,0x2,0xaa,0x55};
 
-    sendPacket(tmp,5);
+    init(mac);
+
     
     while (true) {
-        printf("Hello, world!\n");
+        sendPacket(tmp,sizeof(tmp) / sizeof(tmp[0]));
         sleep_ms(1000);
     }
 }
