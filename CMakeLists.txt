@@ -52,7 +52,8 @@ pico_enable_stdio_usb(N684C_Ethernet_Card 1)
 
 # Add the standard library to the build
 target_link_libraries(N684C_Ethernet_Card
-        pico_stdlib)
+        pico_stdlib
+        pico_multicore)
 
 # Add the standard include files to the build
 target_include_directories(N684C_Ethernet_Card PRIVATE

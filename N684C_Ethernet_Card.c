@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "pico/stdlib.h"
+#include "pico/multicore.h"
 #include "hardware/spi.h"
 #include "enc28j60.h"
 #include "DataLink.h"
@@ -13,8 +14,19 @@
 
 extern uint8_t gatewayMAC[6];
 extern uint8_t deviceMAC[6];
+extern uint8_t deviceIP[4];
+
+extern uint8_t gatewayIP[4];
+extern uint8_t subnetMask[4];
 
 uint8_t receiveBuffer[MAX_FRAMELEN + 14];
+
+void NetworkCard(){
+    uint16_t packetLength = receivePacket(receiveBuffer, MAX_FRAMELEN + 14);
+    if(packetLength > 14){
+        decodeEthernetPacket(receiveBuffer);
+    }
+}
 
 int main()
 {
@@ -33,12 +45,12 @@ int main()
 
     init(deviceMAC);
 
-    while(receivePacket(receiveBuffer, MAX_FRAMELEN + 14) > 14){
-        
-    }
+    multicore_launch_core1(NetworkCard);
+    
 
     while (true) {
-        sendPacket(tmp,sizeof(tmp) / sizeof(tmp[0]));
-        sleep_ms(1000);
+        
+        //sendPacket(tmp,sizeof(tmp) / sizeof(tmp[0]));
+        //sleep_ms(1000);
     }
 }

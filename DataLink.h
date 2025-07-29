@@ -10,4 +10,7 @@ typedef struct Ethernet{
     uint8_t type[2];
 }Ethernet;
 
+void decodeEthernetPacket(void* buffer);
+void addEthernetHeader(void* buffer, uint8_t destinationMAC[], uint16_t type, uint16_t length);
+
 #endif
