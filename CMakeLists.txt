@@ -40,6 +40,7 @@ add_executable(N684C_Ethernet_Card N684C_Ethernet_Card.c
                 DataLink.c
                 Network.c
                 Transport.c
+                operations.c
 )
 
 pico_set_program_name(N684C_Ethernet_Card "N684C_Ethernet_Card")
