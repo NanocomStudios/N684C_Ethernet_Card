@@ -33,3 +33,7 @@ void arpReply(){
     copyArray(senderMAC, arp->targetMAC, sizeof(senderMAC));
     copyArray(senderIP, arp->targetIP, sizeof(senderIP));
 }
+
+void decodeARPRequest(void* buffer){
+    ARP* arp = buffer;
+}

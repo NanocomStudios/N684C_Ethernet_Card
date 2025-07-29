@@ -21,4 +21,6 @@ typedef struct IPv4{
     uint8_t length[2];
 }IPv4;
 
+void decodeARPRequest(void* buffer)
+
 #endif

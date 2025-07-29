@@ -2,6 +2,7 @@
 #define DATA_LINK
 
 typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
 
 typedef struct Ethernet{
     uint8_t destinationMac[6];
