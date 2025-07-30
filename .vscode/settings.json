@@ -39,6 +39,11 @@
     "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja",
     "files.associations": {
         "*.embeddedhtml": "html",
-        "datalink.h": "c"
+        "datalink.h": "c",
+        "buffer": "c",
+        "string_view": "c",
+        "compare": "c",
+        "cstdint": "c",
+        "spi.h": "c"
     }
 }

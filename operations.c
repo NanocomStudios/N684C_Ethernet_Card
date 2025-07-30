@@ -33,3 +33,21 @@ void changeEndien(void* array, int length){
         length--;
     }
 }
+
+uint16_t calculateChecksum(void* header, int length){
+    unsigned int sum = 0;
+    uint16_t* arr = header;
+    while(length > 1){
+        sum += *arr ++;
+        length -= 2;
+    }
+
+    if(length = 1){
+        sum += *arr;
+    }
+
+    while (sum>>16)
+        sum = (sum & 0xffff) + (sum >> 16);
+
+    return (uint16_t)(~sum);
+}

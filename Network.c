@@ -3,15 +3,17 @@
 #include "defines.h"
 #include "operations.h"
 #include <stdlib.h>
+#include <stdio.h>
+#include "pico/stdlib.h"
 
 extern uint8_t gatewayMAC[6];
 extern uint8_t deviceMAC[6];
 extern uint8_t broadcastMAC[6];
 extern uint8_t emptyMAC[6];
 
-uint8_t deviceIP[4]={0};
+uint8_t deviceIP[4]={192,168,1,17};
 uint8_t gatewayIP[4]={0};
-uint8_t subnetMask[4]={0};
+uint8_t subnetMask[4]={255,255,255,0};
 
 uint8_t broadcastIP[4]={255,255,255,255};
 
@@ -19,7 +21,7 @@ static uint16_t packetID = 0;
 
 volatile uint8_t isARPRequestd = 0;
 uint8_t cacheIP[4] ={0};
-uint8_t cacheMAC[6] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+uint8_t cacheMAC[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
 
 void arpReply(uint8_t* senderMAC, uint8_t* senderIP){
     void* buffer = malloc(sizeof(Ethernet) + sizeof(ARP));
@@ -61,7 +63,7 @@ void arpRequest(uint8_t* targetIP){
     arp->ipAddressLength = 0x04;
 
     arp->operation[0] = 0x00;
-    arp->operation[1] = 0x02;
+    arp->operation[1] = 0x01;
 
     copyArray(deviceMAC, arp->senderMAC, MAC_SIZE);
     copyArray(deviceIP, arp->senderIP, IP_SIZE);
@@ -69,10 +71,13 @@ void arpRequest(uint8_t* targetIP){
     copyArray(emptyMAC, arp->targetMAC, MAC_SIZE);
     copyArray(targetIP, arp->targetIP, IP_SIZE);
 
+    copyArray(targetIP, cacheIP, IP_SIZE);
+
     addEthernetHeader(buffer,broadcastMAC, ARP_TYPE, sizeof(ARP));
 }
 
 void decodeARPPacket(void* buffer){
+    printf("Hi ARP\n");
     uint8_t senderMAC[6];
     uint8_t senderIP[4];
     
@@ -80,14 +85,19 @@ void decodeARPPacket(void* buffer){
     if((arp->hardwareType[1] == 0x01)){
         if((arp->protocol[0] == 0x08) && (arp->protocol[1] == 0x00)){
             if((arp->operation[0] == 0x00) && (arp->operation[1] == 0x01)){
+                printf("ARP Req\n");
                 copyArray(arp->senderMAC, senderMAC, MAC_SIZE);
                 copyArray(arp->senderIP, senderIP, IP_SIZE);
                 arpReply(senderMAC, senderIP);
             }else if((arp->operation[0] == 0x00) && (arp->operation[1] == 0x02)){
+                printf("ARP Reply\n");
                 if(isARPRequestd == 1){
+                    printf("Has Request\n");
                     if(cmpArray(arp->senderIP, cacheIP, IP_SIZE) == 1){
+                        printf("Correct IP\n");
                         copyArray(arp->senderMAC, cacheMAC, MAC_SIZE);
                         isARPRequestd = 0;
+                        printf("ARP Got\n");
                     }
                 }
             }
@@ -97,15 +107,20 @@ void decodeARPPacket(void* buffer){
 }
 
 void encodeIPv4(void* buffer, uint8_t protocol, uint8_t* targetIP, uint16_t length){
-
+    printf("Hi 1\n");
     if(cmpArray(targetIP, broadcastIP, IP_SIZE) == 1){
         copyArray(broadcastIP, cacheIP, IP_SIZE);
         copyArray(broadcastMAC, cacheMAC, MAC_SIZE);
-    }else if(cmpArray(targetIP, cacheIP, IP_SIZE) == 0){
-        arpRequest(targetIP);
-        while(isARPRequestd);
     }
-
+    while(cmpArray(targetIP, cacheIP, IP_SIZE) == 0 && isARPRequestd == 0){
+        arpRequest(targetIP);
+        sleep_ms(100);
+        //while(isARPRequestd == 1){
+        //    arpRequest(targetIP);
+        //    sleep_ms(100);
+        //}
+    }
+    printf("Hi 2\n");
     length += sizeof(IPv4);
     uint16_t len_tmp = length;
     uint16_t id_tmp = packetID;
@@ -130,7 +145,12 @@ void encodeIPv4(void* buffer, uint8_t protocol, uint8_t* targetIP, uint16_t leng
     copyArray(deviceIP, ipHeader->sourceIP, IP_SIZE);
     copyArray(cacheIP, ipHeader->destinationIP, IP_SIZE);
 
-    addEthernetHeader(buffer,cacheMAC, IPv4_TYPE, length);
+    ipHeader->headerChecksum = 0;
+
+    ipHeader->headerChecksum = calculateChecksum(ipHeader, sizeof(ipHeader));
+    changeEndien(&ipHeader->headerChecksum, 2);
+
+    addEthernetHeader(buffer,broadcastMAC, IPv4_TYPE, length);
 }
 
 uint8_t isSameSubnet(uint8_t* targetIP){

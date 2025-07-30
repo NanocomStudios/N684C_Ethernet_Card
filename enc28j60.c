@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
+#include "pico/sync.h"
 #include "enc28j60.h"
 
 static uint8_t currentMemoryBank = 0;
 static uint16_t NextPacketPtr;
+
+mutex_t spiLock;
 
 void setCs(uint8_t inp){
     gpio_put(PIN_CS,!inp);
@@ -94,6 +97,9 @@ void writePHY(uint8_t address, uint16_t data){
 }
 
 void sendPacket(uint8_t* packet, uint16_t length){
+
+	mutex_enter_blocking(&spiLock);
+
     // Set the write pointer to start of transmit buffer area
     writeByte(EWRPTL, TXSTART_INIT & 0xFF);
     writeByte(EWRPTH, TXSTART_INIT >> 8);
@@ -115,15 +121,22 @@ void sendPacket(uint8_t* packet, uint16_t length){
 	{
 		writeOnCurrentBank(BIT_FIELD_CLEAR_OP, ECON1, ECON1_TXRTS);
 	}
+
+	mutex_exit(&spiLock);
+
 }
 
 uint16_t receivePacket(uint8_t* buffer, uint16_t maxLength){
+
+	mutex_enter_blocking(&spiLock);
+
     uint16_t rxstat;
 	uint16_t len;
 
     // check if a packet has been received and buffered
     if (readByte(EPKTCNT) == 0)
 	{
+		mutex_exit(&spiLock);
 		return (0);
 	}
 
@@ -164,6 +177,9 @@ uint16_t receivePacket(uint8_t* buffer, uint16_t maxLength){
 	writeByte(ERXRDPTH, (NextPacketPtr) >> 8);
 	// decrement the packet counter indicate we are done with this packet
 	writeOnCurrentBank(BIT_FIELD_SET_OP, ECON2, ECON2_PKTDEC);
+	
+	mutex_exit(&spiLock);
+	
 	return (len);
 }
 

@@ -4,6 +4,7 @@
 #include "defines.h"
 #include "enc28j60.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 uint8_t gatewayMAC[6] = {0};
 uint8_t deviceMAC[6] = {0x20,0x03,0x25,0x61,0x03,0x40};
@@ -24,8 +25,9 @@ void addEthernetHeader(void* buffer, uint8_t destinationMAC[], uint16_t type, ui
 }
 
 void decodeEthernetPacket(void* buffer){
+    
     Ethernet* eth = buffer;
-
+    printf("%x\n",*(uint16_t*)(&eth->type));
     changeEndien(eth->type, 2);
 
     switch(*(uint16_t*)(eth->type)){

@@ -7,4 +7,9 @@
 #define ARP_TYPE 0x806
 #define IPv4_TYPE 0x800
 
+#define ICMP_PROT 1
+#define IGMP_PROT 2
+#define TCP_PROT 6
+#define UDP_PROT 17
+
 #endif

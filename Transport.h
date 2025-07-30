@@ -2,12 +2,15 @@
 #define TRANSPORT
 
 typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
 
 typedef struct UDP{
-    uint8_t sourcePort[2];
-    uint8_t destinationPort[2];
-    uint8_t length[2];
-    uint8_t checksum[2];
+    uint16_t sourcePort;
+    uint16_t destinationPort;
+    uint16_t length;
+    uint16_t checksum;
 }UDP;
+
+void encodeUDP(void* input, uint16_t length, uint8_t* targetIP, uint16_t sourcePort, uint16_t destinationPort);
 
 #endif

@@ -5,6 +5,7 @@
 #define TIME_TO_LIVE 128;
 
 typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
 
 typedef struct ARP{
     uint8_t hardwareType[2];
@@ -26,6 +27,7 @@ typedef struct IPv4{
     uint8_t flagsNfragmentOffset[2];
     uint8_t timeToLive;
     uint8_t protocol;
+    uint16_t headerChecksum;
     uint8_t sourceIP[4];
     uint8_t destinationIP[4];
 }IPv4;
@@ -33,5 +35,6 @@ typedef struct IPv4{
 void arpReply(uint8_t* senderMAC, uint8_t* senderIP);
 void arpRequest(uint8_t* targetIP);
 void decodeARPPacket(void* buffer);
+void encodeIPv4(void* buffer, uint8_t protocol, uint8_t* targetIP, uint16_t length);
 
 #endif

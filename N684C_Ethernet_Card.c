@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
+#include "pico/sync.h"
 #include "hardware/spi.h"
 #include "enc28j60.h"
 #include "DataLink.h"
@@ -19,12 +20,16 @@ extern uint8_t deviceIP[4];
 extern uint8_t gatewayIP[4];
 extern uint8_t subnetMask[4];
 
+extern mutex_t spiLock;
+
 uint8_t receiveBuffer[MAX_FRAMELEN + 14];
 
 void NetworkCard(){
-    uint16_t packetLength = receivePacket(receiveBuffer, MAX_FRAMELEN + 14);
-    if(packetLength > 14){
-        decodeEthernetPacket(receiveBuffer);
+    while(1){
+        uint16_t packetLength = receivePacket(receiveBuffer, MAX_FRAMELEN + 14);
+        if(packetLength > 14){
+            decodeEthernetPacket(receiveBuffer);
+        }
     }
 }
 
@@ -41,16 +46,22 @@ int main()
     // Chip select is active-low, so we'll initialise it to a driven-high state
     gpio_set_dir(PIN_CS, GPIO_OUT);
     
-    uint8_t tmp[] = {0x34,0xBA,0x9A,0x4F,0x31,0x89,0x20,0x03,0x25,0x61,0x03,0x40,0x08,0x06,0x00,0x01,0x08,0x00,0x06,0x04,0x00,0x02,0x20,0x03,0x25,0x61,0x03,0x40,192,168,1,69,0x34,0xBA,0x9A,0x4F,0x31,0x89,192,168,1,1};
+    uint8_t tmp[] = "Hello World";
+
+    uint8_t senderMAC[6] = {0x00,0xe0,0x4c,0x68,0x02,0x13};
+    uint8_t senderIP[4] = {192,168,1,5};
+
+    mutex_init(&spiLock);
 
     init(deviceMAC);
 
     multicore_launch_core1(NetworkCard);
     
-
     while (true) {
-        
+        encodeUDP(tmp, sizeof(tmp), senderIP, 80,80);
+        //arpRequest(senderIP);
+        //arpReply(senderMAC,senderIP);
         //sendPacket(tmp,sizeof(tmp) / sizeof(tmp[0]));
-        //sleep_ms(1000);
+        sleep_ms(1000);
     }
 }
