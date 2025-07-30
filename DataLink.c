@@ -32,7 +32,10 @@ void decodeEthernetPacket(void* buffer){
 
     switch(*(uint16_t*)(eth->type)){
         case 0x806:
-                decodeARPPacket(buffer + sizeof(Ethernet));
+            decodeARPPacket(buffer + sizeof(Ethernet));
+            break;
+        case 0x800:
+            decodeIPv4(buffer + sizeof(Ethernet), eth->sourceMac);
             break;
         default:
 

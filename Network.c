@@ -1,5 +1,6 @@
 #include "Network.h"
 #include "DataLink.h"
+#include "Transport.h"
 #include "defines.h"
 #include "operations.h"
 #include <stdlib.h>
@@ -121,9 +122,13 @@ void encodeIPv4(void* buffer, uint8_t protocol, uint8_t* targetIP, uint16_t leng
         //}
     }
     printf("Hi 2\n");
+    encodeIPv4Common(buffer, protocol, cacheIP, cacheMAC, length);
+}
+
+void encodeIPv4Common(void* buffer, uint8_t protocol, uint8_t* targetIP, uint8_t* targetMAC, uint16_t length){
     length += sizeof(IPv4);
     uint16_t len_tmp = length;
-    uint16_t id_tmp = packetID;
+    uint16_t id_tmp = packetID++;
 
     IPv4* ipHeader = buffer + sizeof(Ethernet);
     ipHeader->version_IHL = VERSION_IHL;
@@ -134,8 +139,6 @@ void encodeIPv4(void* buffer, uint8_t protocol, uint8_t* targetIP, uint16_t leng
     changeEndien(((uint8_t*)(&id_tmp)), 2);
     copyArray(((uint8_t*)(&id_tmp)), ipHeader->id, 2);
 
-    packetID ++;
-
     ipHeader->flagsNfragmentOffset[0] = 0x40;
     ipHeader->flagsNfragmentOffset[1] = 0x00;
 
@@ -143,14 +146,28 @@ void encodeIPv4(void* buffer, uint8_t protocol, uint8_t* targetIP, uint16_t leng
     ipHeader->protocol = protocol;
 
     copyArray(deviceIP, ipHeader->sourceIP, IP_SIZE);
-    copyArray(cacheIP, ipHeader->destinationIP, IP_SIZE);
+    copyArray(targetIP, ipHeader->destinationIP, IP_SIZE);
 
     ipHeader->headerChecksum = 0;
 
     ipHeader->headerChecksum = calculateChecksum(ipHeader, sizeof(ipHeader));
     changeEndien(&ipHeader->headerChecksum, 2);
 
-    addEthernetHeader(buffer,broadcastMAC, IPv4_TYPE, length);
+    addEthernetHeader(buffer,targetMAC, IPv4_TYPE, length);
+}
+
+void decodeIPv4(void* buffer, uint8_t* senderMAC){
+
+    IPv4* ipHeader = buffer;
+    if(cmpArray(deviceIP, ipHeader->destinationIP, IP_SIZE)){
+        switch(ipHeader->protocol){
+            case ICMP_PROT:
+                decodeIcmp(buffer + sizeof(IPv4), ipHeader->sourceIP);
+                break;
+            default:
+
+        }
+    }
 }
 
 uint8_t isSameSubnet(uint8_t* targetIP){

@@ -31,3 +31,11 @@ void encodeUDP(void* input, uint16_t length, uint8_t* targetIP, uint16_t sourceP
     encodeIPv4(buffer, UDP_PROT, targetIP, length);
     
 }
+
+void icmpReply(uint8_t* senderIP, uint16_t){
+
+}
+
+void decodeIcmp(void* buffer, uint8_t* senderIP){
+    
+}

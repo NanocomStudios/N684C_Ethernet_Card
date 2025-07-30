@@ -36,5 +36,7 @@ void arpReply(uint8_t* senderMAC, uint8_t* senderIP);
 void arpRequest(uint8_t* targetIP);
 void decodeARPPacket(void* buffer);
 void encodeIPv4(void* buffer, uint8_t protocol, uint8_t* targetIP, uint16_t length);
+void decodeIPv4(void* buffer, uint8_t* senderMAC);
+void encodeIPv4Common(void* buffer, uint8_t protocol, uint8_t* targetIP, uint8_t* targetMAC, uint16_t length);
 
 #endif
