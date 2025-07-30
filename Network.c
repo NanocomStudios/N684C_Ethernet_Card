@@ -78,7 +78,7 @@ void arpRequest(uint8_t* targetIP){
 }
 
 void decodeARPPacket(void* buffer){
-    printf("Hi ARP\n");
+    
     uint8_t senderMAC[6];
     uint8_t senderIP[4];
     
@@ -86,19 +86,14 @@ void decodeARPPacket(void* buffer){
     if((arp->hardwareType[1] == 0x01)){
         if((arp->protocol[0] == 0x08) && (arp->protocol[1] == 0x00)){
             if((arp->operation[0] == 0x00) && (arp->operation[1] == 0x01)){
-                printf("ARP Req\n");
                 copyArray(arp->senderMAC, senderMAC, MAC_SIZE);
                 copyArray(arp->senderIP, senderIP, IP_SIZE);
                 arpReply(senderMAC, senderIP);
             }else if((arp->operation[0] == 0x00) && (arp->operation[1] == 0x02)){
-                printf("ARP Reply\n");
                 if(isARPRequestd == 1){
-                    printf("Has Request\n");
                     if(cmpArray(arp->senderIP, cacheIP, IP_SIZE) == 1){
-                        printf("Correct IP\n");
                         copyArray(arp->senderMAC, cacheMAC, MAC_SIZE);
                         isARPRequestd = 0;
-                        printf("ARP Got\n");
                     }
                 }
             }
@@ -108,7 +103,7 @@ void decodeARPPacket(void* buffer){
 }
 
 void encodeIPv4(void* buffer, uint8_t protocol, uint8_t* targetIP, uint16_t length){
-    printf("Hi 1\n");
+    
     if(cmpArray(targetIP, broadcastIP, IP_SIZE) == 1){
         copyArray(broadcastIP, cacheIP, IP_SIZE);
         copyArray(broadcastMAC, cacheMAC, MAC_SIZE);
@@ -121,7 +116,7 @@ void encodeIPv4(void* buffer, uint8_t protocol, uint8_t* targetIP, uint16_t leng
         //    sleep_ms(100);
         //}
     }
-    printf("Hi 2\n");
+    
     encodeIPv4Common(buffer, protocol, cacheIP, cacheMAC, length);
 }
 
@@ -150,8 +145,7 @@ void encodeIPv4Common(void* buffer, uint8_t protocol, uint8_t* targetIP, uint8_t
 
     ipHeader->headerChecksum = 0;
 
-    ipHeader->headerChecksum = calculateChecksum(ipHeader, sizeof(ipHeader));
-    changeEndien(&ipHeader->headerChecksum, 2);
+    ipHeader->headerChecksum = calculateChecksum(ipHeader, sizeof(IPv4));
 
     addEthernetHeader(buffer,targetMAC, IPv4_TYPE, length);
 }
@@ -162,7 +156,8 @@ void decodeIPv4(void* buffer, uint8_t* senderMAC){
     if(cmpArray(deviceIP, ipHeader->destinationIP, IP_SIZE)){
         switch(ipHeader->protocol){
             case ICMP_PROT:
-                decodeIcmp(buffer + sizeof(IPv4), ipHeader->sourceIP);
+                changeEndien(ipHeader->length, 2);
+                decodeIcmp(buffer + sizeof(IPv4), ipHeader->sourceIP, senderMAC, *(uint16_t*)ipHeader->length - sizeof(IPv4));
                 break;
             default:
 

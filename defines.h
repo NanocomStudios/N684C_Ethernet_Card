@@ -12,4 +12,6 @@
 #define TCP_PROT 6
 #define UDP_PROT 17
 
+#define ICMP_ECHO_REPLY 0
+#define ICMP_ECHO_REQEST 8
 #endif

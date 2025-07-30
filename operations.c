@@ -36,18 +36,27 @@ void changeEndien(void* array, int length){
 
 uint16_t calculateChecksum(void* header, int length){
     unsigned int sum = 0;
-    uint16_t* arr = header;
+    uint8_t tmp[2];
+    uint8_t* arr = header;
     while(length > 1){
-        sum += *arr ++;
+
+        tmp[1] = *arr++;
+        tmp[0] = *arr++;
+
+        sum += *(uint16_t*)(tmp);
         length -= 2;
     }
 
-    if(length = 1){
-        sum += *arr;
+    if(length == 1){
+        tmp[1] = 0;
+        tmp[0] = *arr;
+
+        sum += *(uint16_t*)(tmp);
     }
 
     while (sum>>16)
         sum = (sum & 0xffff) + (sum >> 16);
 
+    changeEndien(&sum, 2);
     return (uint16_t)(~sum);
 }

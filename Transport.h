@@ -23,6 +23,7 @@ typedef struct ECHO{
 }ECHO;
 
 void encodeUDP(void* input, uint16_t length, uint8_t* targetIP, uint16_t sourcePort, uint16_t destinationPort);
-void decodeIcmp(void* buffer, uint8_t* senderIP);
+void decodeIcmp(void* buffer, uint8_t* senderIP, uint8_t* senderMAC, uint16_t length);
+void replyEchoRequest(ECHO* echoReq, uint8_t* senderIP, uint8_t* senderMAC, uint16_t length);
 
 #endif
